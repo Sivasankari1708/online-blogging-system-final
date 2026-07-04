@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # MongoDB - used by Auth, User, Post, Comment, Engagement, Notification services
+  mongodb:
+    image: mongo:6.0
+    container_name: blogging-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=blog_db
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  # Neo4j - used exclusively by Social Graph service
+  neo4j:
+    image: neo4j:5.5.0
+    container_name: blogging-neo4j
+    ports:
+      - "7474:7474" # HTTP Browser
+      - "7687:7687" # Bolt Protocol
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - neo4j_data:/data
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  neo4j_data:

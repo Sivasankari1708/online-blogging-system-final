@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth/**
+
+        - id: user-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/users/**
+          filters:
+            - AuthenticationFilter
+
+        - id: post-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/posts/**
+          filters:
+            - AuthenticationFilter
+
+        - id: comment-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/comments/**
+          filters:
+            - AuthenticationFilter
+
+        - id: engagement-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/likes/**, /bookmarks/**
+          filters:
+            - AuthenticationFilter
+            
+        - id: notification-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - AuthenticationFilter
+
+        - id: social-graph-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/social/**
+          filters:
+            - AuthenticationFilter
+
+server:
+  port: 8080
+
+jwt:
+  secret: dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gZ2VuZXJhdGlvbiBmb3IgYmxvZ2dpbmcgcGxhdGZvcm0=
