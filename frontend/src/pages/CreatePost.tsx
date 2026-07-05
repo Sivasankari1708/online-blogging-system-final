@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, FileText, Loader2, Image as ImageIcon, Tags, List } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Send, FileText, Loader2, Image as ImageIcon, 
+  Eye, Edit, Bold, Italic, Link as LinkIcon, Quote, 
+  Maximize2, Minimize2, Sparkles
+} from 'lucide-react';
 import api from '../services/api';
 
 export function CreatePost() {
@@ -11,6 +16,8 @@ export function CreatePost() {
   const [isDraft, setIsDraft] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
+  const [focusMode, setFocusMode] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,125 +47,246 @@ export function CreatePost() {
       });
       navigate(`/post/${response.data.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create post.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to create post.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Custom simple parser for live markdown preview
+  const renderMarkdown = (text: string) => {
+    if (!text) return <p className="text-white/30 italic text-sm">Write something first to see live preview...</p>;
+    
+    return text.split('\n').map((line, idx) => {
+      if (line.startsWith('# ')) {
+        return <h1 key={idx} className="text-3xl font-extrabold text-white mt-6 mb-3 font-display">{line.substring(2)}</h1>;
+      }
+      if (line.startsWith('## ')) {
+        return <h2 key={idx} className="text-2xl font-bold text-white mt-5 mb-2 font-display">{line.substring(3)}</h2>;
+      }
+      if (line.startsWith('### ')) {
+        return <h3 key={idx} className="text-xl font-bold text-white mt-4 mb-2 font-display">{line.substring(4)}</h3>;
+      }
+      if (line.startsWith('> ')) {
+        return <blockquote key={idx} className="border-l-4 border-accent pl-4 italic text-white/80 my-4 bg-white/2 p-2 rounded-r-lg">{line.substring(2)}</blockquote>;
+      }
+      return <p key={idx} className="text-white/70 leading-relaxed mb-4 text-sm font-light">{line}</p>;
+    });
+  };
+
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in py-8">
+    <div className="w-full min-h-[85vh] py-6 animate-fade-in relative flex items-center justify-center">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 flex items-center justify-between shadow-lg">
-          {error}
-          <button onClick={() => setError('')} className="text-red-400 hover:text-white transition-colors">✕</button>
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 w-full max-w-md bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-2xl z-50 flex items-center justify-between shadow-2xl backdrop-blur-md">
+          <span className="text-xs font-semibold">{error}</span>
+          <button onClick={() => setError('')} className="text-red-400 hover:text-white cursor-pointer">✕</button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="card p-8 sm:p-10 shadow-2xl">
-        <div className="flex items-center justify-between mb-8 pb-6 border-b border-border">
-          <div>
-            <h1 className="text-3xl font-bold text-text-main">Create a New Post</h1>
-            <p className="text-text-muted mt-1">Share your knowledge with the developer community.</p>
-          </div>
-          <div className="hidden sm:flex items-center gap-3">
-            <button type="button" className="btn-secondary">Preview</button>
-            <button type="button" onClick={() => setIsDraft(!isDraft)} className={`btn-secondary ${isDraft ? 'border-primary text-primary bg-primary/10' : ''}`}>
-              <FileText className="h-4 w-4" /> Save as Draft
-            </button>
-            <button type="submit" disabled={isLoading} className="btn-primary px-6">
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Send className="h-4 w-4" /> Publish</>}
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-8">
-          {/* Cover Image Upload (UI Only) */}
-          <div className="border-2 border-dashed border-border rounded-2xl h-40 flex flex-col items-center justify-center text-text-muted hover:border-primary hover:bg-surface/50 hover:text-primary transition-colors cursor-pointer group">
-            <div className="p-3 bg-surface rounded-full mb-2 group-hover:scale-110 transition-transform">
-              <ImageIcon className="h-6 w-6" />
+      {/* CENTERED FLOATING PAPER CANVAS */}
+      <motion.div
+        animate={{
+          maxWidth: focusMode ? '900px' : '760px',
+          padding: focusMode ? '3rem' : '2.5rem',
+        }}
+        className="w-full glass-panel border border-white/10 rounded-3xl shadow-2xl relative z-10 flex flex-col justify-between"
+        style={{
+          boxShadow: '0 30px 60px -15px rgba(0,0,0,0.9)',
+        }}
+      >
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Header Action row (collapses or dims in focus mode) */}
+          <motion.div 
+            animate={{ opacity: focusMode ? 0.35 : 1 }}
+            className="flex items-center justify-between pb-5 border-b border-white/5"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4.5 w-4.5 text-accent" />
+              <span className="text-xs uppercase font-bold tracking-widest text-white/50 font-display">Drafting studio</span>
             </div>
-            <span className="font-medium">Add a cover image</span>
-          </div>
 
-          {/* Title */}
-          <div>
-            <input
-              type="text"
-              required
-              className="w-full bg-transparent border-none text-4xl sm:text-5xl font-extrabold text-text-main placeholder:text-border focus:outline-none focus:ring-0"
-              placeholder="Post Title here..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          {/* Meta Details Row */}
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1">
-              <label className="block text-sm font-bold text-text-muted mb-2 flex items-center gap-2">
-                <List className="h-4 w-4" /> Category
-              </label>
-              <select 
-                className="input-field appearance-none bg-surface/50"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                <option value="" disabled>Select a category...</option>
-                <option value="technology">Technology</option>
-                <option value="programming">Programming</option>
-                <option value="design">Design</option>
-                <option value="career">Career</option>
-              </select>
-            </div>
-            <div className="flex-[2]">
-              <label className="block text-sm font-bold text-text-muted mb-2 flex items-center gap-2">
-                <Tags className="h-4 w-4" /> Tags
-              </label>
-              <input
-                type="text"
-                className="input-field bg-surface/50"
-                placeholder="react, typescript, webdev (comma separated)"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Editor */}
-          <div>
-            <label className="block text-sm font-bold text-text-muted mb-2">Content</label>
-            <div className="relative">
-              {/* Minimal Formatting Toolbar */}
-              <div className="absolute top-0 left-0 w-full h-12 bg-surface/80 backdrop-blur-sm border-b border-border rounded-t-xl flex items-center px-4 gap-4">
-                <button type="button" className="text-text-muted hover:text-white font-bold">B</button>
-                <button type="button" className="text-text-muted hover:text-white italic font-serif">I</button>
-                <div className="w-px h-4 bg-border"></div>
-                <button type="button" className="text-text-muted hover:text-white text-sm hover:underline">Link</button>
-                <button type="button" className="text-text-muted hover:text-white text-sm">Quote</button>
+            <div className="flex items-center gap-2">
+              {/* Tab selector */}
+              <div className="bg-white/5 p-1 rounded-full flex gap-1 border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('write')}
+                  className={`px-3.5 py-1.5 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                    activeTab === 'write' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Edit className="h-3 w-3 inline mr-1" /> Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-3.5 py-1.5 rounded-full text-[10px] font-bold tracking-wide uppercase transition-all cursor-pointer ${
+                    activeTab === 'preview' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Eye className="h-3 w-3 inline mr-1" /> Preview
+                </button>
               </div>
-              <textarea
-                required
-                rows={16}
-                className="w-full bg-surface/30 border border-border rounded-xl p-6 pt-16 text-text-main placeholder:text-border/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y font-mono text-sm leading-relaxed"
-                placeholder="Write your amazing story here... (Markdown is supported)"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
-            </div>
-          </div>
 
-          {/* Mobile Actions */}
-          <div className="sm:hidden flex flex-col gap-3 pt-4 border-t border-border">
-            <button type="submit" disabled={isLoading} className="btn-primary w-full py-3">
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Publish Post'}
-            </button>
-            <button type="button" onClick={() => setIsDraft(!isDraft)} className="btn-secondary w-full py-3">
-              Save as Draft
-            </button>
-          </div>
-        </div>
-      </form>
+              {/* Focus mode toggle */}
+              <button
+                type="button"
+                onClick={() => setFocusMode(!focusMode)}
+                className="p-2 rounded-full hover:bg-white/5 text-white/50 hover:text-white cursor-pointer border border-white/5"
+                title={focusMode ? 'Exit Focus Mode' : 'Enter Focus Mode'}
+              >
+                {focusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              </button>
+            </div>
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'write' ? (
+              <motion.div
+                key="write-panel"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                {/* Drag-and-drop cover upload placeholder */}
+                <div className="border border-dashed border-white/10 rounded-2xl h-36 flex flex-col items-center justify-center text-white/30 hover:border-white/20 hover:text-white transition-all cursor-pointer group bg-white/2">
+                  <div className="p-2.5 bg-white/5 rounded-full mb-1 group-hover:scale-105 transition-transform border border-white/5">
+                    <ImageIcon className="h-5 w-5" />
+                  </div>
+                  <span className="text-[11px] font-semibold tracking-wide uppercase">Assign Cover Image</span>
+                </div>
+
+                {/* Big Title text area */}
+                <div>
+                  <textarea
+                    rows={1}
+                    required
+                    placeholder="Untitled Publication"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    className="w-full bg-transparent border-none text-3xl sm:text-5xl font-extrabold text-white placeholder:text-white/10 focus:outline-none focus:ring-0 resize-none font-display leading-tight"
+                  />
+                </div>
+
+                {/* Categories & Tags row */}
+                <div className="flex flex-col md:flex-row gap-4 py-2 border-y border-white/5">
+                  <div className="flex-1">
+                    <select 
+                      className="input-field appearance-none"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      <option value="" disabled>Choose Category...</option>
+                      <option value="technology">Technology</option>
+                      <option value="science">Science</option>
+                      <option value="design">Design</option>
+                      <option value="culture">Culture</option>
+                      <option value="ai">Artificial Intelligence</option>
+                    </select>
+                  </div>
+                  <div className="flex-[2]">
+                    <input
+                      type="text"
+                      className="input-field"
+                      placeholder="comma separated tags (e.g. react, design, ai)"
+                      value={tagsInput}
+                      onChange={(e) => setTagsInput(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Text Area Writing Canvas */}
+                <div className="relative">
+                  <textarea
+                    required
+                    rows={12}
+                    className="w-full bg-transparent border-none text-white/80 placeholder:text-white/15 focus:outline-none focus:ring-0 resize-y text-base leading-relaxed font-light"
+                    placeholder="Begin your story..."
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                  />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="preview-panel"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="min-h-[40vh] py-4"
+              >
+                {/* Title Preview */}
+                <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 font-display leading-tight">
+                  {title || <span className="text-white/10 italic">Untitled Story</span>}
+                </h1>
+                
+                {/* Content Preview */}
+                <div className="prose prose-invert max-w-none">
+                  {renderMarkdown(content)}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* BOTTOM FLOATING FORMATTING & ACTION TOOLBAR */}
+          <motion.div 
+            animate={{
+              y: focusMode ? 40 : 0,
+              opacity: focusMode ? 0.2 : 1
+            }}
+            whileHover={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between pt-6 border-t border-white/5"
+          >
+            {/* Formatting shortcuts */}
+            <div className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-full">
+              <button type="button" className="text-white/60 hover:text-white p-1" title="Bold"><Bold className="h-3.5 w-3.5" /></button>
+              <button type="button" className="text-white/60 hover:text-white p-1" title="Italic"><Italic className="h-3.5 w-3.5" /></button>
+              <button type="button" className="text-white/60 hover:text-white p-1" title="Link"><LinkIcon className="h-3.5 w-3.5" /></button>
+              <button type="button" className="text-white/60 hover:text-white p-1" title="Blockquote"><Quote className="h-3.5 w-3.5" /></button>
+            </div>
+
+            {/* Submit & Draft buttons */}
+            <div className="flex items-center gap-3">
+              <button 
+                type="button" 
+                onClick={() => setIsDraft(!isDraft)} 
+                className={`text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-full border transition-all cursor-pointer ${
+                  isDraft 
+                    ? 'bg-[#161616] text-accent border-accent/30' 
+                    : 'bg-transparent text-white/60 border-white/10 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <FileText className="h-3.5 w-3.5 inline mr-1" />
+                {isDraft ? 'Draft Status' : 'Save as Draft'}
+              </button>
+              
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-white text-black text-xs font-bold px-6 py-2.5 rounded-full hover:bg-white/90 hover:scale-102 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-white/5"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5" />
+                    <span>Publish Story</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+
+        </form>
+      </motion.div>
     </div>
   );
 }

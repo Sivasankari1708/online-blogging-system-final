@@ -62,7 +62,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
       setComments([res.data, ...comments]);
       setNewComment('');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to post comment.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to post comment.');
     } finally {
       setSubmitting(false);
     }
@@ -83,7 +83,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
 
       <form onSubmit={handleSubmit} className="mb-10 relative">
         <textarea
-          className="input-field pr-16"
+          className="input-field input-icon-right"
           rows={3}
           placeholder="Share your thoughts..."
           value={newComment}

@@ -43,7 +43,7 @@ export function ReportModal({ isOpen, onClose, postId }: ReportModalProps) {
         setDetails('');
       }, 2000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to submit report.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to submit report.');
     } finally {
       setIsLoading(false);
     }

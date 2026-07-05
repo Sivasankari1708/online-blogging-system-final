@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, Compass, Edit3, Bookmark, 
-  Bell, LogOut, SquareTerminal
+  Bell, LogOut
 } from 'lucide-react';
 
 export function Navbar() {
@@ -26,11 +26,8 @@ export function Navbar() {
         
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="bg-primary/10 p-1.5 rounded-lg group-hover:bg-primary/20 transition-colors">
-            <SquareTerminal className="h-6 w-6 text-primary" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-text-main">
-            Blog System
+          <span className="text-2xl logo-font">
+            Blog.it
           </span>
         </Link>
         
