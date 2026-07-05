@@ -17,8 +17,8 @@ public interface PostRepository extends MongoRepository<Post, String> {
     @Query("{ 'tags': ?0, 'published': true, 'deleted': false }")
     List<Post> findByTagAndPublishedTrueAndDeletedFalse(String tag);
 
-    // New: keyword search on title or content (case-insensitive)
-    @Query("{ '$or': [ { 'title': { '$regex': ?0, '$options': 'i' } }, { 'content': { '$regex': ?0, '$options': 'i' } } ], 'published': true, 'deleted': false }")
+    // New: keyword search on title, content, tags, or categoryName (case-insensitive)
+    @Query("{ '$or': [ { 'title': { '$regex': ?0, '$options': 'i' } }, { 'content': { '$regex': ?0, '$options': 'i' } }, { 'tags': { '$regex': ?0, '$options': 'i' } }, { 'categoryName': { '$regex': ?0, '$options': 'i' } } ], 'published': true, 'deleted': false }")
     List<Post> searchPublishedByKeyword(String keyword);
 
     // New: find all draft (unpublished) posts by author
