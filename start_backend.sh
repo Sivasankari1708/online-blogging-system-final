@@ -2,13 +2,6 @@
 
 echo "🚀 Starting Online Blogging Platform Backend Services..."
 
-# 1. Start Databases (MongoDB & Neo4j)
-echo "📦 Starting Docker containers (Databases)..."
-docker-compose up -d
-
-# Wait for databases to initialize
-echo "⏳ Waiting for databases to initialize (15 seconds)..."
-sleep 15
 
 # 2. Function to start a Spring Boot service
 start_service() {
