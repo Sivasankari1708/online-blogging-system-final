@@ -42,24 +42,23 @@ export function Profile() {
     const fetchProfileData = async () => {
       try {
         const [followersRes, followingRes, postsRes] = await Promise.all([
-          api.get(`/social/followers/${currentUserId}/count`),
-          api.get(`/social/following/${currentUserId}/count`),
-          api.get('/posts/published').catch(() => ({ data: [] }))
+          api.get(`/social/followers/${currentUserId}/count`).catch(() => ({ data: { count: 0 } })),
+          api.get(`/social/following/${currentUserId}/count`).catch(() => ({ data: { count: 0 } })),
+          api.get(`/posts/author/${currentUserId}`).catch(() => ({ data: [] }))
         ]);
         
-        setFollowers(followersRes.data.count);
-        setFollowing(followingRes.data.count);
+        setFollowers(followersRes.data?.count ?? 0);
+        setFollowing(followingRes.data?.count ?? 0);
 
-        // Filter posts owned by this user
-        const myPosts = (postsRes.data || []).filter((post: any) => post.authorId === currentUserId).map((post: any, idx: number) => {
+        const myPosts = (postsRes.data || []).map((post: any, idx: number) => {
           const images = [
             'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
             'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'
           ];
           return {
             ...post,
-            coverImage: post.coverImage || images[idx % images.length],
-            likesCount: post.likesCount || Math.floor(Math.random() * 40) + 5,
+            coverImage: post.coverImageURL || images[idx % images.length],
+            likesCount: post.likesCount || 0,
             readingTime: post.readingTime || 4
           };
         });

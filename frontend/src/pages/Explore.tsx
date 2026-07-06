@@ -24,8 +24,8 @@ export function Explore() {
           ];
           return {
             ...post,
-            coverImage: post.coverImage || images[idx % images.length],
-            likesCount: post.likesCount || Math.floor(Math.random() * 50) + 10,
+            coverImage: post.coverImageURL || images[idx % images.length],
+            likesCount: post.likesCount || 0,
             readingTime: post.readingTime || Math.floor(Math.random() * 6) + 4
           };
         });

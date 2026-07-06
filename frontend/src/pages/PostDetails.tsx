@@ -23,6 +23,8 @@ interface Post {
   authorName: string;
   createdDate: string;
   tags: string[];
+  coverImageURL?: string;
+  likesCount?: number;
 }
 
 export function PostDetails() {
@@ -36,7 +38,7 @@ export function PostDetails() {
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(124);
+  const [likesCount, setLikesCount] = useState(0);
   const [subscribed, setSubscribed] = useState(false);
 
   const currentUserId = localStorage.getItem('userId');
@@ -48,6 +50,7 @@ export function PostDetails() {
         // 1. Fetch post details
         const postRes = await api.get(`/posts/${postId}`);
         setPost(postRes.data);
+        setLikesCount(postRes.data.likesCount || 0);
         
         // 2. Fetch bookmark status if user logged in
         if (currentUserId) {
@@ -138,9 +141,7 @@ export function PostDetails() {
       {/* 1. LARGE HERO BANNER COVER IMAGE */}
       <div className="w-full h-[50vh] min-h-[320px] bg-slate-100 rounded-3xl mb-10 overflow-hidden border border-slate-900/5 relative shadow-xl">
         <img 
-          src={post.tags?.includes('architecture') 
-            ? 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
-            : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80'} 
+          src={post.coverImageURL || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80'} 
           alt={post.title} 
           className="w-full h-full object-cover" 
         />

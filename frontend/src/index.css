@@ -248,3 +248,13 @@ select.input-field {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Enforce white text color on all dark backgrounds/buttons under theme configuration */
+.btn-primary,
+[class*="bg-slate-900"]:not([class*="/5"]):not([class*="/10"]),
+[class*="bg-slate-950"],
+[class*="bg-[#1e293b]"],
+[class*="bg-[#0f172a]"],
+button[class*="bg-slate-900"] {
+  color: #ffffff !important;
+}

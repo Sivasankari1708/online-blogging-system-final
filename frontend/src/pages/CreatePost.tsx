@@ -18,7 +18,48 @@ export function CreatePost() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
   const [focusMode, setFocusMode] = useState(false);
+  const [coverImage, setCoverImage] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
   const navigate = useNavigate();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  };
+  
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file only.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCoverImage(reader.result as string);
+    };
+    reader.onerror = () => {
+      setError('Failed to read image file.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +84,8 @@ export function CreatePost() {
         authorId: userId,
         authorName: authorName,
         tags,
-        isDraft
+        coverImageURL: coverImage,
+        published: !isDraft
       });
       navigate(`/post/${response.data.id}`);
     } catch (err: any) {
@@ -152,11 +194,60 @@ export function CreatePost() {
                 className="space-y-6"
               >
                 {/* Drag-and-drop cover upload placeholder */}
-                <div className="border border-dashed border-white/10 rounded-2xl h-36 flex flex-col items-center justify-center text-white/30 hover:border-white/20 hover:text-white transition-all cursor-pointer group bg-white/2">
-                  <div className="p-2.5 bg-white/5 rounded-full mb-1 group-hover:scale-105 transition-transform border border-white/5">
-                    <ImageIcon className="h-5 w-5" />
-                  </div>
-                  <span className="text-[11px] font-semibold tracking-wide uppercase">Assign Cover Image</span>
+                <div 
+                  onClick={() => document.getElementById('cover-upload')?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-2xl h-44 flex flex-col items-center justify-center transition-all cursor-pointer group relative overflow-hidden ${
+                    isDragging 
+                      ? 'border-accent bg-accent/5 text-accent' 
+                      : coverImage 
+                        ? 'border-slate-900/10' 
+                        : 'border-white/10 text-white/30 hover:border-white/20 hover:text-white bg-white/2'
+                  }`}
+                >
+                  <input 
+                    type="file" 
+                    id="cover-upload" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleFileChange}
+                  />
+                  
+                  {coverImage ? (
+                    <>
+                      <img 
+                        src={coverImage} 
+                        alt="Cover preview" 
+                        className="absolute inset-0 w-full h-full object-cover" 
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-lg">
+                          Replace Photo
+                        </span>
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCoverImage('');
+                          }}
+                          className="absolute top-3 right-3 p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-3 bg-white/5 rounded-full mb-2 group-hover:scale-105 transition-transform border border-white/5">
+                        <ImageIcon className="h-5 w-5" />
+                      </div>
+                      <span className="text-[11px] font-semibold tracking-wide uppercase">
+                        Drag photo here or click to upload
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 {/* Big Title text area */}
