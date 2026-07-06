@@ -10,14 +10,14 @@ interface BlogCardProps {
     authorName: string;
     createdDate: string;
     tags: string[];
-    coverImage?: string;
+    coverImageURL?: string;
     readingTime?: number;
   };
 }
 
 export function BlogCard({ post }: BlogCardProps) {
   // Placeholder images for design purposes if not provided by backend
-  const coverImage = post.coverImage || (post.tags?.includes('architecture') 
+  const coverImage = post.coverImageURL || (post.tags?.includes('architecture') 
     ? 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'
     : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80');
 

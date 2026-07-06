@@ -126,7 +126,7 @@ export function FloatingCapsuleNav() {
                           initial={{ opacity: 0, width: 0 }}
                           animate={{ opacity: 1, width: 'auto' }}
                           exit={{ opacity: 0, width: 0 }}
-                          className={`text-sm font-medium overflow-hidden tracking-wide transition-colors duration-300 ${
+                          className={`text-sm font-medium overflow-hidden tracking-wide transition-colors duration-300 whitespace-nowrap ${
                             isActive ? 'text-slate-900 font-semibold' : 'text-slate-500 hover:text-slate-900'
                           }`}
                         >
@@ -193,7 +193,7 @@ export function FloatingCapsuleNav() {
                     className={`px-5 py-2 text-xs font-bold rounded-full cursor-pointer transition-all ${
                       subscribed 
                         ? 'bg-emerald-500 text-white hover:bg-emerald-600' 
-                        : 'bg-slate-900 text-white hover:bg-slate-800'
+                        : 'bg-slate-900 text-black hover:bg-slate-800'
                     }`}
                   >
                     {subscribed ? 'Subscribed' : 'Subscribe'}
@@ -219,12 +219,12 @@ export function FloatingCapsuleNav() {
             </>
           ) : (
             <div className="flex items-center gap-3">
-              <Link to="/login" className="text-xs font-semibold text-slate-500 hover:text-slate-950 px-2 py-1">
+              <Link to="/login" className="text-xs font-semibold text-slate-500 hover:text-slate-950 px-2 py-1 whitespace-nowrap">
                 Sign In
               </Link>
               <Link 
                 to="/register" 
-                className="bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-slate-800 hover:scale-102 active:scale-97 shadow-sm transition-all"
+                className="bg-slate-900 text-black text-xs font-semibold px-4 py-2 rounded-full hover:bg-slate-800 hover:scale-102 active:scale-97 shadow-sm transition-all whitespace-nowrap"
               >
                 Get Started
               </Link>
@@ -273,7 +273,7 @@ export function FloatingCapsuleNav() {
               <span className="text-sm font-bold text-slate-800 tracking-wider logo-font">Blog.it</span>
               <div className="flex items-center gap-3">
                 <Link to="/login" className="text-xs font-bold text-slate-500 hover:text-slate-800">Sign In</Link>
-                <Link to="/register" className="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-full">Register</Link>
+                <Link to="/register" className="bg-slate-900 text-black text-xs font-bold px-3 py-1.5 rounded-full">Register</Link>
               </div>
             </div>
           )}

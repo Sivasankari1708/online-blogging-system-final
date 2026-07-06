@@ -20,7 +20,7 @@ export function Home() {
     const fetchPosts = async () => {
       try {
         const response = await api.get('/posts/published');
-        
+
         // Enrich posts with placeholders if cover images or details are missing
         const enriched = response.data.map((post: any, idx: number) => {
           const images = [
@@ -33,9 +33,9 @@ export function Home() {
           ];
           return {
             ...post,
-            coverImage: post.coverImage || images[idx % images.length],
+            coverImage: post.coverImageURL || images[idx % images.length],
             readingTime: post.readingTime || Math.floor(Math.random() * 5) + 3,
-            likesCount: post.likesCount || Math.floor(Math.random() * 80) + 12,
+            likesCount: post.likesCount || 0,
             commentsCount: post.commentsCount || Math.floor(Math.random() * 15) + 2
           };
         });
@@ -83,20 +83,20 @@ export function Home() {
 
   return (
     <div ref={containerRef} className="w-full relative">
-      
+
       {/* SECTION 1: CINEMATIC 3D CONVERGENCE HERO */}
       <div ref={heroRef} className="relative h-[220vh] w-full z-20 select-none">
         <div className="hero-pinned-container sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center items-center">
-          
+
           {/* Centered Editorial Title */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-center absolute z-20 pointer-events-none max-w-4xl px-6"
           >
             <h1 className="hero-title-main text-5xl sm:text-7xl lg:text-9xl font-extrabold uppercase tracking-tighter text-white font-display mb-6 leading-none">
-              COSMOS
+              Blog.it
             </h1>
             <p className="text-sm md:text-base uppercase tracking-[0.2em] text-white/50 font-medium">
               A Living Journal of Thoughts, Tech, and Human Ideals
@@ -144,7 +144,7 @@ export function Home() {
           {/* Scrolling indicator */}
           <div className="scroll-indicator absolute bottom-12 flex flex-col items-center gap-2 pointer-events-none">
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40">Scroll to Explore</span>
-            <motion.div 
+            <motion.div
               animate={{ y: [0, 8, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
             >
@@ -157,7 +157,7 @@ export function Home() {
 
       {/* SECTION 2: EDITORIAL MASONRY GALLERY */}
       <section className="relative z-30 pt-16 border-t border-white/5 bg-[#0A0A0A] w-full min-h-screen">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}

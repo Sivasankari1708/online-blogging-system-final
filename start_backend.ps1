@@ -34,17 +34,24 @@ function Start-ServiceProcess {
 
 # 2. Start Core Services
 Start-ServiceProcess "api-gateway"
+Start-Sleep -Seconds 2
 Start-ServiceProcess "auth-service"
+Start-Sleep -Seconds 2
 Start-ServiceProcess "user-service"
+Start-Sleep -Seconds 2
 
 Write-Host "[WAIT] Waiting for core services to initialize (15 seconds)..."
 Start-Sleep -Seconds 15
 
 # 3. Start Dependent Services
 Start-ServiceProcess "post-service"
+Start-Sleep -Seconds 2
 Start-ServiceProcess "comment-service"
+Start-Sleep -Seconds 2
 Start-ServiceProcess "engagement-service"
+Start-Sleep -Seconds 2
 Start-ServiceProcess "social-graph-service"
+Start-Sleep -Seconds 2
 Start-ServiceProcess "notification-service"
 
 Write-Host "[SUCCESS] All backend services have been launched in separate terminal windows!"

@@ -44,7 +44,48 @@ export function CreatePost() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
   const [focusMode, setFocusMode] = useState(false);
+  const [coverImage, setCoverImage] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
   const navigate = useNavigate();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+  };
+  
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file only.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCoverImage(reader.result as string);
+    };
+    reader.onerror = () => {
+      setError('Failed to read image file.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

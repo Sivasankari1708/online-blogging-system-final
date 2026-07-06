@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Loader2, SquareTerminal } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import api from '../services/api';
 
 export function Login() {
@@ -31,10 +31,12 @@ export function Login() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6 animate-fade-in -mt-4 relative">
       <div className="w-full max-w-md glass-card p-8 rounded-2xl border border-white/10 shadow-2xl relative z-10">
         <div className="mb-8 text-center">
-          <div className="bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 inline-block mb-4">
-            <SquareTerminal className="h-10 w-10 text-white" />
+          <div className="mb-6 inline-block">
+            <span className="text-4xl logo-font block">
+              Blog.it
+            </span>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Sign In</h2>
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">Sign In</h2>
           <p className="text-text-muted">Enter your details to access your account</p>
         </div>
 
