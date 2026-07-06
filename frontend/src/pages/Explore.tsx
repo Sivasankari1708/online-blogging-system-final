@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Compass, Search, ArrowRight, ArrowUpRight, Sparkles, Loader2, Quote } from 'lucide-react';
 import api from '../services/api';
-import { Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { BlogCard } from '../components/BlogCard';
 
 export function Explore() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearch = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('c') || 'All';
+
   const [posts, setPosts] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [search, setSearch] = useState(initialSearch);
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [loading, setLoading] = useState(true);
+
+  // Sync state to URL whenever it changes
+  const updateFilters = (newSearch: string, newCategory: string) => {
+    setSearch(newSearch);
+    setActiveCategory(newCategory);
+    setSearchParams({ q: newSearch, c: newCategory }, { replace: true });
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -42,10 +53,17 @@ export function Explore() {
   const categories = ['All', 'Architecture', 'Design', 'Technology', 'Philosophy', 'Productivity', 'Lifestyle'];
 
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(search.toLowerCase()) || 
-                          post.content.toLowerCase().includes(search.toLowerCase());
+    const searchLower = search.toLowerCase();
+    const tagsArray = Array.isArray(post.tags) ? post.tags : (typeof post.tags === 'string' ? [post.tags] : []);
+    
+    const matchesSearch = (post.title || '').toLowerCase().includes(searchLower) || 
+                          (post.content || '').toLowerCase().includes(searchLower) ||
+                          (post.categoryName || '').toLowerCase().includes(searchLower) ||
+                          tagsArray.some((tag: any) => (tag || '').toLowerCase().includes(searchLower));
+    
     const matchesCategory = activeCategory === 'All' || 
-                            post.tags?.some((tag: string) => tag.toLowerCase() === activeCategory.toLowerCase());
+                            (post.categoryName || '').toLowerCase() === activeCategory.toLowerCase();
+                            
     return matchesSearch && matchesCategory;
   });
 
@@ -71,7 +89,7 @@ export function Explore() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => updateFilters(search, cat)}
               className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeCategory === cat
                   ? 'bg-slate-900 text-white'
@@ -89,7 +107,7 @@ export function Explore() {
             type="text"
             placeholder="Search keywords..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => updateFilters(e.target.value, activeCategory)}
             className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-900/5 border border-transparent focus:outline-none focus:bg-white focus:border-slate-900/10 text-sm font-medium transition-all"
           />
         </div>
@@ -99,11 +117,17 @@ export function Explore() {
         <div className="flex justify-center items-center py-32">
           <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </div>
-      ) : posts.length === 0 ? (
+      ) : filteredPosts.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-slate-900/10 rounded-3xl bg-slate-900/2">
           <Sparkles className="h-10 w-10 text-slate-400 mx-auto mb-4" />
           <h3 className="text-lg font-bold mb-2 font-display">No publications found</h3>
-          <p className="text-xs text-text-muted">There are no articles available under this filter.</p>
+          <p className="text-xs text-slate-500">There are no articles available under this filter. Try a different search.</p>
+          <button 
+            onClick={() => updateFilters('', 'All')}
+            className="mt-6 px-6 py-2.5 bg-slate-900 text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-slate-800 hover:scale-105 transition-all cursor-pointer shadow-lg"
+          >
+            Clear Filters
+          </button>
         </div>
       ) : (
         <div className="flex flex-col gap-12">
@@ -162,28 +186,28 @@ export function Explore() {
                   </span>
                   
                   <div className="flex flex-col gap-3.5 mt-2">
-                    <a href="#" className="flex items-center justify-between group/link py-1 border-b border-slate-900/5 pb-2 text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors">
+                    <button onClick={() => updateFilters('GenerativeEthics', activeCategory)} className="flex items-center justify-between group/link py-1 border-b border-slate-900/5 pb-2 text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors w-full cursor-pointer">
                       <span>#GenerativeEthics</span>
                       <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover/link:text-slate-900 transition-colors" />
-                    </a>
-                    <a href="#" className="flex items-center justify-between group/link py-1 border-b border-slate-900/5 pb-2 text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors">
+                    </button>
+                    <button onClick={() => updateFilters('SlowLiving', activeCategory)} className="flex items-center justify-between group/link py-1 border-b border-slate-900/5 pb-2 text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors w-full cursor-pointer">
                       <span>#SlowLiving</span>
                       <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover/link:text-slate-900 transition-colors" />
-                    </a>
-                    <a href="#" className="flex items-center justify-between group/link py-1 text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors">
+                    </button>
+                    <button onClick={() => updateFilters('BrutalistUI', activeCategory)} className="flex items-center justify-between group/link py-1 text-sm font-bold text-slate-800 hover:text-slate-950 transition-colors w-full cursor-pointer">
                       <span>#BrutalistUI</span>
                       <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover/link:text-slate-900 transition-colors" />
-                    </a>
+                    </button>
                   </div>
                 </div>
 
                 {/* Box 2: Productivity Card */}
-                <div className="border border-slate-900/5 bg-[#FFFFFF] rounded-[24px] overflow-hidden shadow-lg p-6 text-left flex flex-col justify-between flex-grow">
+                <div className="border border-slate-900/5 bg-[#FFFFFF] rounded-[24px] overflow-hidden shadow-lg p-6 text-left flex flex-col justify-between flex-grow cursor-pointer group/card" onClick={() => updateFilters(search, 'Productivity')}>
                   <div className="w-full h-32 rounded-xl overflow-hidden mb-4 border border-slate-900/5">
                     <img 
                       src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80" 
                       alt="Productivity stacks" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
                     />
                   </div>
                   
@@ -191,7 +215,7 @@ export function Explore() {
                     <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                       PRODUCTIVITY
                     </span>
-                    <h4 className="text-base font-bold text-slate-900 leading-snug mb-1 font-display">
+                    <h4 className="text-base font-bold text-slate-900 leading-snug mb-1 font-display group-hover/card:text-accent transition-colors">
                       Tools for the Intentional Writer.
                     </h4>
                     <p className="text-[11px] text-slate-500 leading-normal mb-4 font-light">
@@ -199,10 +223,10 @@ export function Explore() {
                     </p>
                   </div>
 
-                  <a href="#" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-950 hover:text-accent transition-colors pt-2 border-t border-slate-900/5 w-full">
-                    <span>LEARN MORE</span>
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-950 group-hover/card:text-accent transition-colors pt-2 border-t border-slate-900/5 w-full">
+                    <span>EXPLORE CATEGORY</span>
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </a>
+                  </div>
                 </div>
 
               </div>

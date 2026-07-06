@@ -7,7 +7,7 @@ interface Comment {
   id: string;
   postId: string;
   authorId: string;
-  authorName: string;
+  authorUsername: string;
   content: string;
   createdAt: string;
 }
@@ -56,7 +56,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
       const res = await api.post('/comments', {
         postId,
         authorId: currentUserId,
-        authorName: currentUserName,
+        authorUsername: currentUserName,
         content: newComment,
       });
       setComments([res.data, ...comments]);
@@ -103,10 +103,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
           <div key={comment.id} className="glass p-5 rounded-xl border border-white/5 animate-fade-in">
             <div className="flex items-center gap-3 mb-3">
               <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-gray-600 to-gray-400 flex items-center justify-center text-white font-bold text-sm">
-                {comment.authorName.charAt(0).toUpperCase()}
+                {comment.authorUsername.charAt(0).toUpperCase()}
               </div>
               <div>
-                <div className="font-medium text-sm text-gray-200">{comment.authorName}</div>
+                <div className="font-medium text-sm text-gray-200">{comment.authorUsername}</div>
                 <div className="text-xs text-gray-500">{format(new Date(comment.createdAt), 'MMM d, yyyy h:mm a')}</div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -11,8 +11,34 @@ import api from '../services/api';
 export function CreatePost() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  const applyFormat = (prefix: string, suffix: string = '') => {
+    if (!textAreaRef.current) return;
+    const start = textAreaRef.current.selectionStart;
+    const end = textAreaRef.current.selectionEnd;
+    const text = content;
+    const before = text.substring(0, start);
+    const selected = text.substring(start, end);
+    const after = text.substring(end);
+
+    const newContent = before + prefix + selected + suffix + after;
+    setContent(newContent);
+    
+    setTimeout(() => {
+      if (textAreaRef.current) {
+        textAreaRef.current.focus();
+        textAreaRef.current.setSelectionRange(
+          start + prefix.length,
+          end + prefix.length
+        );
+      }
+    }, 0);
+  };
+
   const [tagsInput, setTagsInput] = useState('');
   const [category, setCategory] = useState('');
+  const [coverImageURL, setCoverImageURL] = useState('');
   const [isDraft, setIsDraft] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +110,8 @@ export function CreatePost() {
         authorId: userId,
         authorName: authorName,
         tags,
-        coverImageURL: coverImage,
+        categoryName: category,
+        coverImageURL,
         published: !isDraft
       });
       navigate(`/post/${response.data.id}`);
@@ -193,60 +220,88 @@ export function CreatePost() {
                 transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
-                {/* Drag-and-drop cover upload placeholder */}
+                {/* Cover Image Input */}
                 <div 
-                  onClick={() => document.getElementById('cover-upload')?.click()}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-2xl h-44 flex flex-col items-center justify-center transition-all cursor-pointer group relative overflow-hidden ${
-                    isDragging 
-                      ? 'border-accent bg-accent/5 text-accent' 
-                      : coverImage 
-                        ? 'border-slate-900/10' 
-                        : 'border-white/10 text-white/30 hover:border-white/20 hover:text-white bg-white/2'
-                  }`}
+                  className="relative flex flex-col gap-4 p-5 bg-white/2 border border-dashed border-white/10 rounded-2xl hover:border-white/20 transition-all"
+                  onPaste={(e) => {
+                    const items = e.clipboardData?.items;
+                    if (items) {
+                      for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                          const file = items[i].getAsFile();
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setCoverImageURL(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                          break;
+                        }
+                      }
+                    }
+                  }}
                 >
-                  <input 
-                    type="file" 
-                    id="cover-upload" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={handleFileChange}
-                  />
-                  
-                  {coverImage ? (
-                    <>
-                      <img 
-                        src={coverImage} 
-                        alt="Cover preview" 
-                        className="absolute inset-0 w-full h-full object-cover" 
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-bold uppercase tracking-wider text-white/50">Cover Image</span>
+                    <span className="text-[10px] text-white/30 uppercase tracking-widest hidden sm:inline">Paste URL, Upload, or Ctrl+V Image</span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1 flex items-center">
+                      <div className="absolute left-4 p-1.5 bg-white/5 rounded-full border border-white/5 text-white/50 pointer-events-none">
+                        <LinkIcon className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="url"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-all"
+                        placeholder="Paste Cover Image URL here..."
+                        value={coverImageURL.startsWith('data:image') ? '' : coverImageURL}
+                        onChange={(e) => setCoverImageURL(e.target.value)}
                       />
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-lg">
-                          Replace Photo
-                        </span>
+                    </div>
+                    
+                    <label className="flex items-center justify-center gap-2 cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-3 rounded-xl transition-all text-sm font-semibold tracking-wide text-white/70 hover:text-white shrink-0">
+                      <ImageIcon className="h-4 w-4" />
+                      <span>Browse Files</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setCoverImageURL(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  {coverImageURL && (
+                    <div className="mt-2 h-48 w-full rounded-xl overflow-hidden border border-white/10 relative group bg-black/20 flex items-center justify-center">
+                      <span className="absolute text-white/30 text-xs font-semibold tracking-widest uppercase">Invalid or Loading Image...</span>
+                      <img 
+                        src={coverImageURL} 
+                        alt="Cover preview" 
+                        className="w-full h-full object-cover relative z-10 opacity-0 transition-opacity duration-300" 
+                        onLoad={(e) => { (e.target as HTMLImageElement).style.opacity = '1'; }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }}
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                         <button 
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCoverImage('');
-                          }}
-                          className="absolute top-3 right-3 p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                          type="button" 
+                          onClick={() => setCoverImageURL('')}
+                          className="bg-red-500/80 hover:bg-red-500 text-white px-4 py-2 rounded-full backdrop-blur-md text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
                         >
-                          ✕
+                          Clear Image
                         </button>
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="p-3 bg-white/5 rounded-full mb-2 group-hover:scale-105 transition-transform border border-white/5">
-                        <ImageIcon className="h-5 w-5" />
-                      </div>
-                      <span className="text-[11px] font-semibold tracking-wide uppercase">
-                        Drag photo here or click to upload
-                      </span>
-                    </>
+                    </div>
                   )}
                 </div>
 
@@ -296,9 +351,10 @@ export function CreatePost() {
                 {/* Text Area Writing Canvas */}
                 <div className="relative">
                   <textarea
+                    ref={textAreaRef}
                     required
                     rows={12}
-                    className="w-full bg-transparent border-none text-white/80 placeholder:text-white/15 focus:outline-none focus:ring-0 resize-y text-base leading-relaxed font-light"
+                    className="w-full bg-transparent border-none text-white/80 placeholder:text-white/15 focus:outline-none focus:ring-0 resize-y text-base leading-relaxed font-light cursor-text"
                     placeholder="Begin your story..."
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
@@ -314,6 +370,13 @@ export function CreatePost() {
                 transition={{ duration: 0.2 }}
                 className="min-h-[40vh] py-4"
               >
+                {/* Cover Image Preview */}
+                {coverImageURL && (
+                  <div className="w-full h-64 sm:h-80 rounded-2xl overflow-hidden mb-8 border border-white/10 shadow-2xl">
+                    <img src={coverImageURL} alt="Cover" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
                 {/* Title Preview */}
                 <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 font-display leading-tight">
                   {title || <span className="text-white/10 italic">Untitled Story</span>}
@@ -338,10 +401,10 @@ export function CreatePost() {
           >
             {/* Formatting shortcuts */}
             <div className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-full">
-              <button type="button" className="text-white/60 hover:text-white p-1" title="Bold"><Bold className="h-3.5 w-3.5" /></button>
-              <button type="button" className="text-white/60 hover:text-white p-1" title="Italic"><Italic className="h-3.5 w-3.5" /></button>
-              <button type="button" className="text-white/60 hover:text-white p-1" title="Link"><LinkIcon className="h-3.5 w-3.5" /></button>
-              <button type="button" className="text-white/60 hover:text-white p-1" title="Blockquote"><Quote className="h-3.5 w-3.5" /></button>
+              <button type="button" onClick={() => applyFormat('**', '**')} className="text-white/60 hover:text-white p-1 cursor-pointer" title="Bold"><Bold className="h-3.5 w-3.5" /></button>
+              <button type="button" onClick={() => applyFormat('*', '*')} className="text-white/60 hover:text-white p-1 cursor-pointer" title="Italic"><Italic className="h-3.5 w-3.5" /></button>
+              <button type="button" onClick={() => applyFormat('[', '](url)')} className="text-white/60 hover:text-white p-1 cursor-pointer" title="Link"><LinkIcon className="h-3.5 w-3.5" /></button>
+              <button type="button" onClick={() => applyFormat('> ', '')} className="text-white/60 hover:text-white p-1 cursor-pointer" title="Blockquote"><Quote className="h-3.5 w-3.5" /></button>
             </div>
 
             {/* Submit & Draft buttons */}
