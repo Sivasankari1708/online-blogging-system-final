@@ -3,6 +3,11 @@ $env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 $env:MAVEN_OPTS = "-Xmx256m"
 
+if (-not $env:JWT_KEY) {
+    Write-Host "[INFO] JWT_KEY is not set. Using default development key."
+    $env:JWT_KEY = "dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gZ2VuZXJhdGlvbiBmb3IgYmxvZ2dpbmcgcGxhdGZvcm0="
+}
+
 Write-Host "[INFO] Starting Online Blogging Platform Backend Services in separate windows..."
 
 $services = @("api-gateway", "auth-service", "user-service", "post-service", "comment-service", "engagement-service", "social-graph-service", "notification-service")

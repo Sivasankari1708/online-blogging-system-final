@@ -3,14 +3,14 @@ import {
   Home, Compass, Edit3, Bookmark, 
   Bell, LogOut
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export function Navbar() {
-  const isAuthenticated = !!localStorage.getItem('token');
+  const { isAuthenticated, logout, username } = useAuth();
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/login';
+    logout();
   };
 
   const navLinks = [
@@ -80,7 +80,7 @@ export function Navbar() {
                 className="btn-ghost flex items-center gap-2"
               >
                 <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-xs font-bold text-black border border-border">
-                  U
+                  {username ? username.charAt(0).toUpperCase() : 'U'}
                 </div>
                 <span className="text-sm font-medium hidden sm:block">Profile</span>
               </Link>

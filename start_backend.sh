@@ -6,6 +6,10 @@ echo "🚀 Starting Online Blogging Platform Backend Services..."
 # 2. Function to start a Spring Boot service
 start_service() {
     local dir=$1
+    if [ -z "$JWT_KEY" ]; then
+        echo "⚠️ JWT_KEY is not set. Using default development key."
+        export JWT_KEY="dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gZ2VuZXJhdGlvbiBmb3IgYmxvZ2dpbmcgcGxhdGZvcm0="
+    fi
     echo "⚙️ Starting $dir..."
     cd $dir
     # Run in background, limit memory to prevent crashing, redirect output to a log file
