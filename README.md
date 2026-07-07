@@ -18,29 +18,64 @@ The system consists of 7 microservices and 1 API Gateway:
 ## Prerequisites
 
 - **Java 21**
-- **Docker & Docker Compose** (for databases)
+- **Node.js** (v18 or higher)
+- **Docker & Docker Compose** (for databases) OR local installations of **MongoDB** and **Neo4j**
 
-## How to Run Locally
+---
+
+## 🚀 How to Run the Application
+
+You can run the backend services all at once using the provided scripts, or individually.
 
 ### 1. Start the Databases
-To spin up MongoDB and Neo4j, simply run:
+Ensure your databases are running before starting the services.
+If you have Docker, you can spin up MongoDB and Neo4j by running:
 ```bash
 docker-compose up -d
 ```
 - MongoDB will be available on `localhost:27017`
 - Neo4j will be available on `localhost:7687` (Username: `neo4j`, Password: `password`)
 
-### 2. Run the Microservices
-You can run each microservice from its respective directory:
+### 2. Run All Backend Services (Recommended)
+We provide scripts to start all 8 Spring Boot services automatically.
+
+**For Mac/Linux:**
 ```bash
-cd auth-service && ./mvnw spring-boot:run
-cd user-service && ./mvnw spring-boot:run
-# ... repeat for all services
+sh start_backend.sh
 ```
 
-*Note: Since they use different ports (8081-8087), you can run them all simultaneously. Make sure to run `api-gateway` (8080) last.*
+**For Windows (PowerShell):**
+```powershell
+.\start_backend.ps1
+```
+*Note: The script automatically sets a default `JWT_KEY` for authentication. Logs for each service are saved in the root directory (e.g., `api-gateway.log`).*
 
-### 3. API Communication
+### 3. Run Backend Services Individually
+If you prefer to run them one by one, open separate terminal windows and run the Maven wrapper:
+
+```bash
+cd api-gateway && ./mvnw spring-boot:run
+cd auth-service && ./mvnw spring-boot:run
+cd user-service && ./mvnw spring-boot:run
+cd post-service && ./mvnw spring-boot:run
+cd comment-service && ./mvnw spring-boot:run
+cd engagement-service && ./mvnw spring-boot:run
+cd social-graph-service && ./mvnw spring-boot:run
+cd notification-service && ./mvnw spring-boot:run
+```
+*Make sure to export `JWT_KEY` in your terminal if you aren't using the start scripts!*
+
+### 4. Run the React Frontend
+Open a new terminal window, navigate to the frontend directory, install dependencies, and start the development server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+The frontend will be available at `http://localhost:5173`.
+
+### 5. API Communication
 All frontend requests should be routed through the **API Gateway** on `http://localhost:8080`.
 
 Example: To register, send a `POST` request to `http://localhost:8080/auth/register`. The gateway will forward this to the Auth Service on port 8081.
