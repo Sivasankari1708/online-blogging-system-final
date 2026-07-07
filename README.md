@@ -1,7 +1,15 @@
 # Online Blogging Platform - Microservices Backend
 
-This is a modern Full Stack Web Application backend built with Spring Boot 3.4.1 and Java 21.
+This is a modern Full Stack Web Application built with Spring Boot 3.4.1 (Java 21) on the backend and React on the frontend. 
 
+## 📖 What this Application Does
+The **Online Blogging Platform** is a feature-rich, highly scalable blogging system that allows users to create, read, interact with, and discover content. 
+- **Users** can register accounts, manage their profiles, and build a social graph by following other authors.
+- **Writers** can create rich blog posts, save drafts, and publish them to their followers.
+- **Readers** can engage with content by liking posts, bookmarking their favorite articles for later, and participating in nested comment threads.
+- **Real-time Notifications** ensure users are alerted when someone interacts with their posts or follows them.
+
+The system is built using a highly decoupled **Microservices Architecture** to demonstrate scalable enterprise patterns, utilizing MongoDB for flexible document storage and Neo4j for managing complex social relationships.
 ## Architecture
 
 The system consists of 7 microservices and 1 API Gateway:
