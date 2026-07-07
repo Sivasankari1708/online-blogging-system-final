@@ -67,4 +67,4 @@ server:
   port: 8080
 
 jwt:
-  secret: dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gZ2VuZXJhdGlvbiBmb3IgYmxvZ2dpbmcgcGxhdGZvcm0=
+  secret: ${JWT_KEY:dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gZ2VuZXJhdGlvbiBmb3IgYmxvZ2dpbmcgcGxhdGZvcm0=}

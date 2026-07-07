@@ -5,7 +5,7 @@ $env:MAVEN_OPTS = "-Xmx256m"
 
 if (-not $env:JWT_KEY) {
     Write-Host "[INFO] JWT_KEY is not set. Using default development key."
-    $env:JWT_KEY = "your-256-bit-secret-your-256-bit-secret-your-256-bit-secret-your-256-bit-secret"
+    $env:JWT_KEY = "dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBKV1QgdG9rZW4gZ2VuZXJhdGlvbiBmb3IgYmxvZ2dpbmcgcGxhdGZvcm0="
 }
 
 Write-Host "[INFO] Starting Online Blogging Platform Backend Services in separate windows..."
